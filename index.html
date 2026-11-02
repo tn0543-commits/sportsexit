@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Country - Language Edition</title>
+    
+    <!-- Tailwind CSS for rapid layout and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for Icons (Microphone, Volume, Play, etc.) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matador-black': '#080808',
+                        'bull-red': '#D71920',
+                        'crimson-dark': '#8B0000',
+                        'spanish-gold': '#D4AF37',
+                    },
+                    fontFamily: {
+                        'sans': ['"Century Gothic"', 'CenturyGothic', 'AppleGothic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-red': '0 0 20px rgba(215, 25, 32, 0.6)',
+                        'glow-gold': '0 0 15px rgba(210, 175, 55, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Keyframe Animations for dramatic effects */
+        @keyframes cape-wave {
+            0% { transform: scale(1) rotate(0deg); opacity: 0.1; }
+            50% { transform: scale(1.05) rotate(2deg); opacity: 0.15; }
+            100% { transform: scale(1) rotate(0deg); opacity: 0.1; }
+        }
+
+        @keyframes pulse-mic {
+            0% { box-shadow: 0 0 0 0 rgba(215, 25, 32, 0.7); }
+            70% { box-shadow: 0 0 0 30px rgba(215, 25, 32, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(215, 25, 32, 0); }
+        }
+        
+        @keyframes slide-up-fade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            background-color: #080808;
+            color: #ffffff;
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling on smartboard */
+            user-select: none; /* Prevent accidental text selection */
+        }
+
+        .bg-cape {
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle at right, rgba(139, 0, 0, 0.4) 0%, transparent 60%);
+            z-index: -2;
+            animation: cape-wave 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        .bull-silhouette {
+            position: absolute;
+            bottom: -5%;
+            left: -5%;
+            width: 40vw;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 10px #8B0000);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #D71920, #8B0000);
+            border: 2px solid #D4AF37;
+            box-shadow: 0 4px 15px rgba(215, 25, 32, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(215, 25, 32, 0.8);
+            border-color: #ffffff;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .mic-active {
+            animation: pulse-mic 1.5s infinite;
+            background: linear-gradient(135deg, #ff3b3b, #D71920) !important;
+            border-color: #ffffff !important;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(215, 25, 32, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        .animate-enter {
+            animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Hide elements utility */
+        .hidden-screen {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col items-center justify-center font-sans relative">
+
+    <!-- Abstract Cape Background -->
+    <div class="bg-cape">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full fill-crimson-dark" opacity="0.3">
+            <path d="M100,0 C80,30 60,10 40,50 C20,90 50,80 0,100 L100,100 Z" />
+        </svg>
+    </div>
+
+    <!-- Bull Silhouette SVG -->
+    <svg class="bull-silhouette" viewBox="0 0 512 512" fill="#ffffff">
+        <path d="M495.9,256c-10.6-28.8-33.1-51.5-61.9-61.5c-4.8-1.7-10.3-2.6-15.6-3.2c-15.4-1.9-31.5,0.7-46.1,6.8c-10.2,4.3-19.6,10.2-27.9,17.4c-9.5-20.7-25-38.3-44.5-50.1c-19.5-11.8-42.3-17.5-65.4-15.8c-34.6,2.6-67.6,17.9-92.4,42.4c-11.6,11.5-21.6,24.8-29.4,39.2c-5.2,9.6-9.5,19.7-12.7,30.3c-2.3,7.5-4.5,15-5.9,22.7c-5.4,30.1-43.1,65.3-75.1,70c-9.6,1.4-18,6.8-23.7,14.6c-4.6,6.3-7.2,14-7.2,21.9c0,13.7,7.6,26.1,19.8,32.3c21.2,10.8,47.2,11.2,68.8,1.4c17.5-7.9,32.5-21.1,43.2-37.6c3.1-4.8,5.8-9.9,8.2-15.2c19.3-43,51.8-67.3,87.6-67.3c15.2,0,30.6,4.8,44.7,13.8c12,7.7,22.8,17.6,31.7,29.1c16.3,21.2,26,47.1,28.2,74c1.1,13.6,5,26.7,11.6,38.4c8.4,15,22.4,26.4,39,32.1c18.5,6.3,39.1,5.2,56.8-3.1c17.5-8.2,31.8-22,41-38.6c11.4-20.6,14.7-44.9,9.4-67.8c-1.9-8.4-4.8-16.5-8.7-24.1c18.4-15.1,32.4-34.9,40.1-57.5C502.9,286,501.9,270.6,495.9,256z"/>
+    </svg>
+
+    <!-- SCREEN 1: TITLE SCREEN -->
+    <div id="screen-title" class="w-full h-full flex flex-col items-center justify-center text-center z-10 px-8 relative animate-enter">
+        <div class="glass-panel p-16 rounded-3xl max-w-5xl w-full border-t-4 border-t-bull-red">
+            <h2 class="text-spanish-gold tracking-widest uppercase text-3xl font-bold mb-4">Language Edition</h2>
+            <h1 class="text-8xl md:text-9xl font-black mb-8 leading-tight drop-shadow-2xl">
+                GUESS THE <span class="text-bull-red block mt-2" style="text-shadow: 0 0 30px rgba(215,25,32,0.8);">COUNTRY</span>
+            </h1>
+            <p class="text-3xl text-gray-300 italic mb-16 font-light border-b border-gray-700 pb-8 inline-block">
+                “Listen Carefully. Speak Loudly. Guess the Country!”
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-8 justify-center mt-8">
+                <button onclick="showHowToPlay()" class="px-10 py-6 rounded-full text-2xl font-bold bg-transparent border-2 border-gray-500 text-gray-300 hover:text-white hover:border-white transition-all">
+                    <i class="fa-solid fa-book-open mr-3"></i> HOW TO PLAY
+                </button>
+                <button onclick="startGame()" class="btn-primary px-16 py-6 rounded-full text-3xl font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-play mr-4"></i> START GAME
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: HOW TO PLAY -->
+    <div id="modal-how-to-play" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center hidden-screen px-4 backdrop-blur-md">
+        <div class="glass-panel max-w-4xl w-full p-12 rounded-2xl border-l-8 border-l-spanish-gold relative animate-enter">
+            <button onclick="closeHowToPlay()" class="absolute top-6 right-6 text-4xl text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-times"></i>
+            </button>
+            <h2 class="text-5xl font-bold mb-8 text-bull-red border-b border-gray-700 pb-4">HOW TO PLAY</h2>
+            <ol class="text-2xl space-y-6 text-gray-200">
+                <li class="flex items-start"><span class="text-spanish-gold font-bold mr-4 text-3xl">1.</span> <span>The computer will speak a greeting in a foreign language. Listen carefully!</span></li>
+                <li class="flex items-start"><span class="text-spanish-gold font-bold mr-4 text-3xl">2.</span> <span>Think about which <b>country</b> speaks that language.</span></li>
+                <li class="flex items-start"><span class="text-spanish-gold font-bold mr-4 text-3xl">3.</span> <span>Answer by clicking the <span class="text-bull-red"><i class="fa-solid fa-microphone"></i> Microphone</span> and speaking, <b>OR</b> type the country name in the input box.</span></li>
+                <li class="flex items-start"><span class="text-spanish-gold font-bold mr-4 text-3xl">4.</span> <span>Submit your answer in <b>English</b>.</span></li>
+                <li class="flex items-start"><span class="text-spanish-gold font-bold mr-4 text-3xl">5.</span> <span>If you are correct, you advance to the next round!</span></li>
+            </ol>
+            <div class="mt-12 text-center">
+                <button onclick="closeHowToPlay()" class="btn-primary px-12 py-4 rounded-full text-2xl font-bold">UNDERSTOOD</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN GAME -->
+    <div id="screen-game" class="w-full h-full flex flex-col z-10 hidden-screen">
+        
+        <!-- Header: Round Indicator -->
+        <header class="w-full p-8 flex justify-between items-center border-b border-crimson-dark bg-black bg-opacity-50 backdrop-blur-sm">
+            <div class="flex items-center gap-6">
+                <button onclick="goHome()" class="text-gray-400 hover:text-bull-red hover:scale-110 transition-all text-4xl" title="Return to Title Screen">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <div class="text-spanish-gold font-bold text-3xl tracking-widest uppercase flex items-center">
+                    <i class="fa-solid fa-earth-americas mr-3"></i> Language Edition
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="bg-crimson-dark px-8 py-3 rounded-full text-3xl font-black border-2 border-bull-red shadow-glow-red">
+                    ROUND <span id="round-number">1</span> / 10
+                </div>
+                <button id="btn-next-round" onclick="skipOrNextRound()" class="px-6 py-3 rounded-full text-xl font-bold bg-transparent border-2 border-spanish-gold text-spanish-gold hover:bg-spanish-gold hover:text-black transition-all flex items-center gap-2" title="Go to Next Round">
+                    <span>NEXT</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow flex flex-col items-center justify-between w-full max-w-5xl px-4 py-4 mx-auto overflow-y-auto relative z-20">
+            
+            <!-- Question Display -->
+            <div id="question-container" class="text-center w-full animate-enter flex-shrink-0 my-auto">
+                <p class="text-2xl md:text-3xl text-gray-300 mb-2 font-light">Listen to the greeting:</p>
+                
+                <!-- The Greeting Text -->
+                <div class="glass-panel py-6 px-6 rounded-3xl border-t-4 border-b-4 border-bull-red shadow-2xl mb-3 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-red-900 opacity-20 pointer-events-none"></div>
+                    <h2 id="greeting-display" class="text-6xl md:text-8xl font-black tracking-tight drop-shadow-lg text-white mb-3">
+                        <!-- Greeting injected here -->
+                    </h2>
+                    
+                    <button id="btn-replay-audio" onclick="replayPrompt()" class="mt-2 px-6 py-2.5 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-lg border border-gray-600 transition-colors inline-flex items-center group">
+                        <i class="fa-solid fa-volume-high text-bull-red mr-3 group-hover:scale-110 transition-transform"></i> 
+                        Listen Again
+                    </button>
+                </div>
+
+                <p class="text-3xl md:text-4xl font-bold text-spanish-gold mb-3 drop-shadow-md">Which country is it?</p>
+            </div>
+
+            <!-- Answer Interaction Area (Prominent Typing Box + Voice Option) -->
+            <div class="w-full max-w-3xl glass-panel p-5 md:p-6 rounded-3xl border-2 border-spanish-gold shadow-glow-gold flex flex-col gap-4 my-auto">
+                
+                <!-- Typing Option - Main Prominent Input -->
+                <div class="w-full bg-black/70 p-4 rounded-2xl border border-spanish-gold/40 shadow-inner">
+                    <label for="text-answer-input" class="block text-spanish-gold text-xl font-bold mb-2 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-keyboard text-bull-red"></i>
+                        <span>TYPE YOUR ANSWER (IN ENGLISH)</span>
+                    </label>
+                    <form id="text-answer-form" onsubmit="handleTextSubmit(event)" class="w-full flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="text-answer-input" placeholder="Type country name here..." autocomplete="off" class="flex-grow px-6 py-3.5 rounded-xl bg-gray-900 border-2 border-spanish-gold text-white text-2xl font-bold focus:outline-none focus:ring-4 focus:ring-bull-red placeholder-gray-500 shadow-inner text-center sm:text-left">
+                        <button type="submit" class="btn-primary px-8 py-3.5 rounded-xl text-2xl font-bold uppercase tracking-wider flex items-center justify-center gap-2 whitespace-nowrap">
+                            <span>SUBMIT</span>
+                            <i class="fa-solid fa-paper-plane text-xl"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Divider -->
+                <div class="flex items-center w-full my-1 opacity-60">
+                    <div class="flex-grow border-t border-gray-600"></div>
+                    <span class="px-4 text-gray-400 font-bold text-sm uppercase tracking-widest">OR USE VOICE</span>
+                    <div class="flex-grow border-t border-gray-600"></div>
+                </div>
+
+                <!-- Voice Option -->
+                <div class="w-full bg-black/50 p-3 rounded-xl border border-red-900/40 flex flex-row items-center justify-between px-6">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-microphone text-bull-red text-2xl"></i>
+                        <span id="mic-status" class="text-xl text-gray-200 font-bold tracking-wider">
+                            Click mic to speak answer...
+                        </span>
+                    </div>
+                    <button id="btn-mic" onclick="toggleListening()" class="btn-primary w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-glow-red relative z-20 flex-shrink-0" title="Click to Speak">
+                        <i id="mic-icon" class="fa-solid fa-microphone"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Feedback Overlay (Correct/Incorrect) -->
+            <div id="feedback-overlay" class="absolute inset-0 z-30 flex items-center justify-center hidden-screen bg-black bg-opacity-80 backdrop-blur-sm">
+                <div id="feedback-panel" class="p-16 rounded-3xl border-4 max-w-4xl w-full text-center transform transition-all scale-90 opacity-0">
+                    <i id="feedback-icon" class="fa-solid text-8xl mb-6"></i>
+                    <h2 id="feedback-title" class="text-7xl font-black mb-4 uppercase tracking-wider"></h2>
+                    <p id="feedback-message" class="text-4xl text-white"></p>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- SCREEN 3: END SCREEN -->
+    <div id="screen-end" class="w-full h-full flex flex-col items-center justify-center text-center z-10 px-8 hidden-screen">
+        <div class="glass-panel p-16 rounded-3xl max-w-5xl w-full border-4 border-spanish-gold shadow-glow-gold animate-enter">
+            <i class="fa-solid fa-trophy text-9xl text-spanish-gold mb-8 drop-shadow-lg"></i>
+            <h1 class="text-7xl font-black mb-6 text-white">¡EXCELENTE!</h1>
+            <p class="text-4xl text-gray-200 mb-12 leading-relaxed">
+                You have completed all 10 rounds and guessed every country correctly.
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-6 justify-center">
+                <button onclick="goHome()" class="px-10 py-6 rounded-full text-2xl font-bold bg-transparent border-2 border-gray-500 text-gray-300 hover:text-white hover:border-white transition-all">
+                    <i class="fa-solid fa-house mr-3"></i> HOME
+                </button>
+                <button onclick="resetGame()" class="btn-primary px-16 py-6 rounded-full text-3xl font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-rotate-right mr-4"></i> PLAY AGAIN
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA: The 10 Language Rounds (Exact Order as specified) ---
+        // langCode is used to try and find the best native TTS voice.
+        // acceptableAnswers array handles Speech-to-Text variations to be forgiving.
+        const gameRounds = [
+            { 
+                id: 1, country: "Japan", langCode: "ja-JP", 
+                greetingText: "こんにちは", greetingPhonetic: "Konnichiwa",
+                acceptableAnswers: ["japan"] 
+            },
+            { 
+                id: 2, country: "South Korea", langCode: "ko-KR", 
+                greetingText: "안녕", greetingPhonetic: "Annyeong",
+                acceptableAnswers: ["south korea", "korea", "republic of korea"] 
+            },
+            { 
+                id: 3, country: "France", langCode: "fr-FR", 
+                greetingText: "Bonjour", greetingPhonetic: "Bonjour",
+                acceptableAnswers: ["france"] 
+            },
+            { 
+                id: 4, country: "Italy", langCode: "it-IT", 
+                greetingText: "Ciao", greetingPhonetic: "Ciao",
+                acceptableAnswers: ["italy"] 
+            },
+            { 
+                id: 5, country: "Thailand", langCode: "th-TH", 
+                greetingText: "สวัสดี", greetingPhonetic: "Sawasdee",
+                acceptableAnswers: ["thailand"] 
+            },
+            { 
+                id: 6, country: "Philippines", langCode: "fil-PH", // Tagalog/Filipino
+                greetingText: "Kumusta", greetingPhonetic: "Kumusta",
+                acceptableAnswers: ["philippines", "the philippines"] 
+            },
+            { 
+                id: 7, country: "United States", langCode: "en-US", 
+                greetingText: "Hello", greetingPhonetic: "Hello",
+                acceptableAnswers: ["united states", "america", "usa", "us", "the united states", "united states of america"] 
+            },
+            { 
+                id: 8, country: "Germany", langCode: "de-DE", 
+                greetingText: "Hallo", greetingPhonetic: "Hallo",
+                acceptableAnswers: ["germany"] 
+            },
+            { 
+                id: 9, country: "China", langCode: "zh-CN", 
+                greetingText: "你好", greetingPhonetic: "Nǐ hǎo",
+                acceptableAnswers: ["china", "people's republic of china", "prc"] 
+            },
+            { 
+                id: 10, country: "Spain", langCode: "es-ES", 
+                greetingText: "Hola", greetingPhonetic: "Hola",
+                acceptableAnswers: ["spain"] 
+            }
+        ];
+
+        // --- STATE VARIABLES ---
+        let currentRoundIndex = 0;
+        let isListening = false;
+        let recognition = null;
+        let synth = window.speechSynthesis;
+        let availableVoices = [];
+
+        // --- UI ELEMENTS ---
+        const elScreenTitle = document.getElementById('screen-title');
+        const elScreenGame = document.getElementById('screen-game');
+        const elScreenEnd = document.getElementById('screen-end');
+        const elModalHowToPlay = document.getElementById('modal-how-to-play');
+        
+        const elRoundNumber = document.getElementById('round-number');
+        const elGreetingDisplay = document.getElementById('greeting-display');
+        const elBtnMic = document.getElementById('btn-mic');
+        const elMicIcon = document.getElementById('mic-icon');
+        const elMicStatus = document.getElementById('mic-status');
+        const elTextAnswerInput = document.getElementById('text-answer-input');
+        
+        const elFeedbackOverlay = document.getElementById('feedback-overlay');
+        const elFeedbackPanel = document.getElementById('feedback-panel');
+        const elFeedbackIcon = document.getElementById('feedback-icon');
+        const elFeedbackTitle = document.getElementById('feedback-title');
+        const elFeedbackMessage = document.getElementById('feedback-message');
+
+        
+        // Setup Voices
+        function populateVoiceList() {
+            availableVoices = synth.getVoices();
+        }
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        // Setup Speech Recognition
+        function setupSpeechRecognition() {
+            // Check for browser support
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!window.SpeechRecognition) {
+                alert("Speech Recognition API is not supported in this browser. Please use Google Chrome for smartboards.");
+                return false;
+            }
+
+            recognition = new window.SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; // They must speak the country name in English
+
+            recognition.onstart = function() {
+                isListening = true;
+                elBtnMic.classList.add('mic-active');
+                elMicIcon.classList.remove('fa-microphone');
+                elMicIcon.classList.add('fa-ear-listen');
+                elMicStatus.innerText = "Listening... Speak the country name!";
+                elMicStatus.classList.add('text-bull-red', 'animate-pulse');
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.trim().toLowerCase();
+                // Strip out punctuation for better matching
+                const cleanTranscript = transcript.replace(/[.,!?]/g, "");
+                console.log("Student said:", cleanTranscript);
+                elMicStatus.innerText = `Heard: "${transcript}"`;
+                
+                checkAnswer(cleanTranscript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error:", event.error);
+                isListening = false;
+                resetMicUI();
+                if(event.error === 'no-speech') {
+                    elMicStatus.innerText = "No speech detected. Try again.";
+                } else {
+                    elMicStatus.innerText = "Error: " + event.error + ". Click to try again.";
+                }
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                resetMicUI();
+            };
+            
+            return true;
+        }
+
+        function resetMicUI() {
+            elBtnMic.classList.remove('mic-active');
+            elMicIcon.classList.remove('fa-ear-listen');
+            elMicIcon.classList.add('fa-microphone');
+            elMicStatus.classList.remove('text-bull-red', 'animate-pulse');
+            if(!isListening && !elFeedbackOverlay.classList.contains('hidden-screen')){
+                 // Keep whatever message is there during feedback
+            } else if (!isListening) {
+                elMicStatus.innerText = "Click microphone to answer...";
+            }
+        }
+
+        function showHowToPlay() {
+            elModalHowToPlay.classList.remove('hidden-screen');
+        }
+
+        function closeHowToPlay() {
+            elModalHowToPlay.classList.add('hidden-screen');
+        }
+
+        function startGame() {
+            // Must initialize audio context/synth on user gesture to bypass browser restrictions
+            synth.cancel(); 
+            
+            if (!setupSpeechRecognition()) return;
+
+            elScreenTitle.classList.add('hidden-screen');
+            elScreenGame.classList.remove('hidden-screen');
+            currentRoundIndex = 0;
+            loadRound();
+        }
+
+        function loadRound() {
+            const roundData = gameRounds[currentRoundIndex];
+            
+            // Clear input box and focus for quick typing
+            if (elTextAnswerInput) {
+                elTextAnswerInput.value = '';
+                setTimeout(() => elTextAnswerInput.focus(), 300);
+            }
+            
+            // Update UI
+            elRoundNumber.innerText = (currentRoundIndex + 1);
+            elGreetingDisplay.innerText = roundData.greetingText;
+            
+            // Clear status
+            elMicStatus.innerText = "Click mic to speak answer...";
+            
+            // Wait slightly for UI to transition, then speak
+            setTimeout(() => {
+                speakPrompt();
+            }, 800);
+        }
+
+        function replayPrompt() {
+            synth.cancel();
+            speakPrompt();
+        }
+
+        function speakPrompt() {
+            const roundData = gameRounds[currentRoundIndex];
+            synth.cancel(); // Stop anything currently speaking
+
+            // Part 1: Speak the greeting in native language
+            const utterGreeting = new SpeechSynthesisUtterance(roundData.greetingText);
+            
+            // Try to find a voice that matches the language code
+            let preferredVoice = availableVoices.find(v => v.lang.startsWith(roundData.langCode));
+            
+            // Fallback for languages like Filipino if strict match fails
+            if (!preferredVoice && roundData.langCode === 'fil-PH') {
+                preferredVoice = availableVoices.find(v => v.lang.startsWith('es') || v.lang.startsWith('en')); // Fallback
+            }
+
+            if (preferredVoice) {
+                utterGreeting.voice = preferredVoice;
+            } else {
+                // If native text fails badly without voice, use the phonetic English spelling as fallback
+                utterGreeting.text = roundData.greetingPhonetic;
+                utterGreeting.lang = 'en-US'; 
+            }
+            
+            utterGreeting.rate = 0.85; // Speak slightly slower for clarity
+            utterGreeting.pitch = 1.1;
+
+            // Part 2: Ask the question in English
+            const utterQuestion = new SpeechSynthesisUtterance("Which country is it?");
+            utterQuestion.lang = 'en-US';
+            utterQuestion.rate = 0.9;
+            
+            // Chain them
+            utterGreeting.onend = () => {
+                setTimeout(() => {
+                    synth.speak(utterQuestion);
+                }, 600); // Pause between greeting and question
+            };
+
+            utterQuestion.onend = () => {
+                elMicStatus.innerText = "Click microphone to answer...";
+            };
+
+            // Start speaking
+            synth.speak(utterGreeting);
+        }
+
+        function toggleListening() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                synth.cancel(); // Stop speaking if they click early
+                try {
+                    recognition.start();
+                } catch(e) {
+                    // Handle case where recognition might already be starting
+                    console.log("Recognition start error:", e);
+                }
+            }
+        }
+
+        function checkAnswer(spokenText) {
+            const roundData = gameRounds[currentRoundIndex];
+            const isCorrect = roundData.acceptableAnswers.some(ans => spokenText.includes(ans));
+
+            if (isCorrect) {
+                showFeedback(true, roundData.country);
+            } else {
+                showFeedback(false, "");
+            }
+        }
+
+        function handleTextSubmit(e) {
+            if (e) e.preventDefault();
+            const typedText = elTextAnswerInput.value.trim().toLowerCase();
+            if (!typedText) return;
+
+            // Stop any active TTS or mic listening
+            synth.cancel();
+            if (isListening && recognition) {
+                recognition.stop();
+            }
+
+            const cleanText = typedText.replace(/[.,!?]/g, "");
+            checkAnswer(cleanText);
+        }
+
+        function showFeedback(isCorrect, correctAnswerName) {
+            elFeedbackOverlay.classList.remove('hidden-screen');
+            elFeedbackPanel.style.opacity = '1';
+            elFeedbackPanel.style.transform = 'scale(1)';
+
+            if (isCorrect) {
+                // SUCCESS
+                elFeedbackPanel.className = 'p-16 rounded-3xl border-4 max-w-4xl w-full text-center transform transition-all duration-500 scale-100 opacity-100 border-[#00FF00] bg-[#003300] bg-opacity-90 shadow-[0_0_50px_rgba(0,255,0,0.4)]';
+                elFeedbackIcon.className = 'fa-solid fa-check-circle text-8xl mb-6 text-[#00FF00]';
+                elFeedbackTitle.innerText = "CORRECT!";
+                elFeedbackTitle.className = 'text-7xl font-black mb-4 uppercase tracking-wider text-[#00FF00]';
+                elFeedbackMessage.innerHTML = `The answer is <b>${correctAnswerName}</b>.`;
+                
+                // Play success ding if desired (using synth as fallback)
+                let successAudio = new SpeechSynthesisUtterance("Correct!");
+                successAudio.rate = 1.5;
+                synth.speak(successAudio);
+
+                // Wait 3.5 seconds, then next round
+                setTimeout(() => {
+                    hideFeedback();
+                    nextRound();
+                }, 3500);
+
+            } else {
+                // INCORRECT
+                elFeedbackPanel.className = 'p-16 rounded-3xl border-4 max-w-4xl w-full text-center transform transition-all duration-300 scale-100 opacity-100 border-bull-red bg-crimson-dark bg-opacity-90 shadow-glow-red';
+                elFeedbackIcon.className = 'fa-solid fa-xmark-circle text-8xl mb-6 text-white';
+                elFeedbackTitle.innerText = "NOT QUITE";
+                elFeedbackTitle.className = 'text-7xl font-black mb-4 uppercase tracking-wider text-white';
+                elFeedbackMessage.innerHTML = "Try again! Discuss with your classmates.";
+                
+                // Wait 2.5 seconds, then let them try again
+                setTimeout(() => {
+                    hideFeedback();
+                    elMicStatus.innerText = "Click microphone to try again...";
+                }, 2500);
+            }
+        }
+
+        function hideFeedback() {
+            elFeedbackOverlay.classList.add('hidden-screen');
+            elFeedbackPanel.style.opacity = '0';
+            elFeedbackPanel.style.transform = 'scale(0.9)';
+            if (elTextAnswerInput) elTextAnswerInput.value = '';
+        }
+
+        function skipOrNextRound() {
+            // Stop any playing audio or microphone listening active in current round
+            synth.cancel();
+            if (isListening && recognition) {
+                recognition.stop();
+            }
+            hideFeedback();
+            resetMicUI();
+            nextRound();
+        }
+
+        function nextRound() {
+            currentRoundIndex++;
+            if (currentRoundIndex >= gameRounds.length) {
+                endGame();
+            } else {
+                loadRound();
+            }
+        }
+
+        function endGame() {
+            elScreenGame.classList.add('hidden-screen');
+            elScreenEnd.classList.remove('hidden-screen');
+            
+            // Fanfare
+            let winUtterance = new SpeechSynthesisUtterance("Congratulations! You have completed all rounds.");
+            winUtterance.lang = "en-US";
+            synth.speak(winUtterance);
+        }
+
+        function resetGame() {
+            elScreenEnd.classList.add('hidden-screen');
+            elScreenTitle.classList.remove('hidden-screen');
+            currentRoundIndex = 0;
+            // Stop any lingering audio
+            synth.cancel();
+        }
+
+        function goHome() {
+            // Stop any active audio and listening
+            synth.cancel();
+            if (isListening && recognition) {
+                recognition.stop();
+            }
+            
+            // Hide feedback if it's currently showing
+            hideFeedback();
+            
+            // Reset UI states
+            resetMicUI();
+            
+            // Navigate to title screen
+            elScreenGame.classList.add('hidden-screen');
+            elScreenEnd.classList.add('hidden-screen');
+            elScreenTitle.classList.remove('hidden-screen');
+            
+            // Reset round tracking
+            currentRoundIndex = 0;
+        }
+
+    </script>
+</body>
+</html>
